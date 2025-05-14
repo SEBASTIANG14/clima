@@ -1,21 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Button } from 'react-native';
+import { getUser, logoutUser } from '../../utils/auth';
+import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), 500);
+    const loadUser = async () => {
+      const userData = await getUser();
+      setUser(userData);
+      setLoading(false);
+    };
+    loadUser();
   }, []);
+
+  const handleLogout = async () => {
+    await logoutUser();
+    router.replace('/login');
+  };
 
   if (loading) return <ActivityIndicator style={styles.loader} size="large" color="#34c759" />;
 
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <Text style={styles.name}>Pepe torres</Text>
-        <Text style={styles.info}>✉️ pepe.torres@mail.com</Text>
-        <Text style={styles.info}>📱 +52 6121234567</Text>
+        <Text style={styles.name}>{user?.name}</Text>
+        <Text style={styles.info}>✉️ {user?.email}</Text>
+        <Text style={styles.info}>📱 Sin número registrado</Text>
+
+        <View style={{ marginTop: 20, width: '100%' }}>
+          <Button title="Cerrar sesión" onPress={handleLogout} color="#ff3b30" />
+        </View>
       </View>
     </View>
   );
